@@ -40,7 +40,7 @@ import java.net.InetUnixAddress;
  *
  * Note that this component runs in a separate thread.
  */
-class NativeCrashListener extends Thread {
+final class NativeCrashListener extends Thread {
     static final String TAG = "NativeCrashListener";
     static final boolean DEBUG = false;
     static final boolean MORE_DEBUG = DEBUG && false;
@@ -152,12 +152,11 @@ class NativeCrashListener extends Thread {
                                 Slog.d(TAG, "Exception writing ack: " + e.getMessage());
                             }
                         }
-                        finally {
-                            try {
-                                Slog.d(TAG, "Closing socket connection: " + peerFd);
-                                Libcore.os.close(peerFd);
-                            } catch (ErrnoException e) {
-                                Slog.w(TAG, "Error closing socket connection", e);
+                        try {
+                            Libcore.os.close(peerFd);
+                        } catch (ErrnoException e) {
+                            if (MORE_DEBUG) {
+                                Slog.d(TAG, "Exception closing socket: " + e.getMessage());
                             }
                         }
                     }

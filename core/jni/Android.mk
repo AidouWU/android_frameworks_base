@@ -4,6 +4,9 @@ include $(CLEAR_VARS)
 LOCAL_CFLAGS += -DHAVE_CONFIG_H -DKHTML_NO_EXCEPTIONS -DGKWQ_NO_JAVA
 LOCAL_CFLAGS += -DNO_SUPPORT_JS_BINDING -DQT_NO_WHEELEVENT -DKHTML_NO_XBL
 LOCAL_CFLAGS += -U__APPLE__
+LOCAL_CFLAGS += -Wno-unused-parameter -Wno-int-to-pointer-cast
+LOCAL_CFLAGS += -Wno-maybe-uninitialized -Wno-parentheses
+LOCAL_CPPFLAGS += -Wno-conversion-null
 
 ifeq ($(TARGET_ARCH), arm)
 	LOCAL_CFLAGS += -DPACKED="__attribute__ ((packed))"
@@ -51,6 +54,7 @@ LOCAL_SRC_FILES:= \
 	android_view_KeyEvent.cpp \
 	android_view_KeyCharacterMap.cpp \
 	android_view_HardwareRenderer.cpp \
+	android_view_GraphicBuffer.cpp \
 	android_view_GLES20DisplayList.cpp \
 	android_view_GLES20Canvas.cpp \
 	android_view_MotionEvent.cpp \
@@ -59,10 +63,8 @@ LOCAL_SRC_FILES:= \
 	android_text_AndroidCharacter.cpp \
 	android_text_AndroidBidi.cpp \
 	android_os_Debug.cpp \
-	android_os_FileUtils.cpp \
 	android_os_MemoryFile.cpp \
 	android_os_MessageQueue.cpp \
-	android_os_ParcelFileDescriptor.cpp \
 	android_os_Parcel.cpp \
 	android_os_SELinux.cpp \
 	android_os_SystemClock.cpp \
@@ -72,7 +74,7 @@ LOCAL_SRC_FILES:= \
 	android_net_LocalSocketImpl.cpp \
 	android_net_NetUtils.cpp \
 	android_net_TrafficStats.cpp \
-	android_net_wifi_Wifi.cpp \
+	android_net_wifi_WifiNative.cpp \
 	android_nio_utils.cpp \
 	android_text_format_Time.cpp \
 	android_util_AssetManager.cpp \
@@ -105,7 +107,6 @@ LOCAL_SRC_FILES:= \
 	android/graphics/Path.cpp \
 	android/graphics/PathMeasure.cpp \
 	android/graphics/PathEffect.cpp \
-	android_graphics_PixelFormat.cpp \
 	android/graphics/Picture.cpp \
 	android/graphics/PorterDuff.cpp \
 	android/graphics/BitmapRegionDecoder.cpp \
@@ -119,6 +120,7 @@ LOCAL_SRC_FILES:= \
 	android/graphics/Utils.cpp \
 	android/graphics/Xfermode.cpp \
 	android/graphics/YuvToJpegEncoder.cpp \
+	android/graphics/pdf/PdfDocument.cpp \
 	android_media_AudioRecord.cpp \
 	android_media_AudioSystem.cpp \
 	android_media_AudioTrack.cpp \
@@ -126,6 +128,7 @@ LOCAL_SRC_FILES:= \
 	android_media_RemoteDisplay.cpp \
 	android_media_ToneGenerator.cpp \
 	android_hardware_Camera.cpp \
+	android_hardware_camera2_CameraMetadata.cpp \
 	android_hardware_SensorManager.cpp \
 	android_hardware_SerialPort.cpp \
 	android_hardware_UsbDevice.cpp \
@@ -149,12 +152,6 @@ LOCAL_SRC_FILES:= \
 	android_animation_PropertyValuesHolder.cpp \
 	com_android_internal_net_NetworkStatsFactory.cpp
 
-ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
-    LOCAL_CFLAGS += -DQCOM_HARDWARE
-    LOCAL_SRC_FILES += \
-	    com_android_internal_app_ActivityTrigger.cpp
-endif
-
 LOCAL_C_INCLUDES += \
 	$(JNI_H_INCLUDE) \
 	$(LOCAL_PATH)/android/graphics \
@@ -164,12 +161,10 @@ LOCAL_C_INCLUDES += \
 	$(call include-path-for, libhardware)/hardware \
 	$(call include-path-for, libhardware_legacy)/hardware_legacy \
 	$(TOP)/frameworks/av/include \
- 	external/e2fsprogs/lib \
-	external/skia/include/core \
-	external/skia/include/effects \
-	external/skia/include/images \
-	external/skia/include/ports \
+	$(TOP)/system/media/camera/include \
+	external/e2fsprogs/lib \
 	external/skia/src/core \
+	external/skia/src/pdf \
 	external/skia/src/images \
 	external/skia/include/utils \
 	external/sqlite/dist \
@@ -186,6 +181,7 @@ LOCAL_C_INCLUDES += \
 	libcore/include
 
 LOCAL_SHARED_LIBRARIES := \
+	libmemtrack \
 	libandroidfw \
 	libexpat \
 	libext2_blkid \
@@ -197,10 +193,11 @@ LOCAL_SHARED_LIBRARIES := \
 	libnetutils \
 	libui \
 	libgui \
+	libinput \
 	libcamera_client \
+	libcamera_metadata \
 	libskia \
 	libsqlite \
-	libdvm \
 	libEGL \
 	libGLESv1_CM \
 	libGLESv2 \
@@ -220,6 +217,27 @@ LOCAL_SHARED_LIBRARIES := \
 	libharfbuzz_ng \
 	libz
 
+ifeq ($(BOARD_USES_QC_TIME_SERVICES),true)
+LOCAL_CFLAGS += -DHAVE_QC_TIME_SERVICES=1
+LOCAL_SHARED_LIBRARIES += libtime_genoff
+$(shell mkdir -p $(OUT)/obj/SHARED_LIBRARIES/libtime_genoff_intermediates/)
+$(shell touch $(OUT)/obj/SHARED_LIBRARIES/libtime_genoff_intermediates/export_includes)
+endif
+
+ifeq ($(TARGET_ARCH), arm)
+  ifeq ($(ARCH_ARM_HAVE_NEON),true)
+    TARGET_arm_CFLAGS += -DUSE_NEON_BITMAP_OPTS -mvectorize-with-neon-quad
+    LOCAL_SRC_FILES+= \
+		android/graphics/Bitmap.cpp.arm
+  else
+    LOCAL_SRC_FILES+= \
+		android/graphics/Bitmap.cpp
+  endif
+else
+    LOCAL_SRC_FILES+= \
+		android/graphics/Bitmap.cpp
+endif
+
 ifeq ($(USE_OPENGL_RENDERER),true)
 	LOCAL_SHARED_LIBRARIES += libhwui
 endif
@@ -238,6 +256,7 @@ endif
 
 LOCAL_MODULE:= libandroid_runtime
 
+include external/stlport/libstlport.mk
 include $(BUILD_SHARED_LIBRARY)
 
 include $(call all-makefiles-under,$(LOCAL_PATH))
