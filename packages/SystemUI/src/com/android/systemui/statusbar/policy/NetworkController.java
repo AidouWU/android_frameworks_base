@@ -603,7 +603,6 @@ public class NetworkController extends BroadcastReceiver implements DemoMode {
                 case TelephonyManager.NETWORK_TYPE_HSDPA:
                 case TelephonyManager.NETWORK_TYPE_HSUPA:
                 case TelephonyManager.NETWORK_TYPE_HSPA:
-                case TelephonyManager.NETWORK_TYPE_HSPAP:
                     if (mHspaDataDistinguishable) {
                         mDataIconList = TelephonyIcons.DATA_H[mInetCondition];
                         mDataTypeIconId = R.drawable.stat_sys_data_fully_connected_h;
@@ -617,6 +616,26 @@ public class NetworkController extends BroadcastReceiver implements DemoMode {
                         mContentDescriptionDataType = mContext.getString(
                                 R.string.accessibility_data_connection_3g);
                     }
+                    break;
+                case TelephonyManager.NETWORK_TYPE_HSPAP:
+                    if (mHspaDataDistinguishable) {
+                        mDataIconList = TelephonyIcons.DATA_HP[mInetCondition];
+                        mDataTypeIconId = R.drawable.stat_sys_data_fully_connected_hp;
+                        mQSDataTypeIconId = TelephonyIcons.QS_DATA_HP[mInetCondition];
+                        mContentDescriptionDataType = mContext.getString(
+                                R.string.accessibility_data_connection_HP);
+                    } else {
+                        mDataIconList = TelephonyIcons.DATA_3G[mInetCondition];
+                        mDataTypeIconId = R.drawable.stat_sys_data_fully_connected_3g;
+                        mQSDataTypeIconId = TelephonyIcons.QS_DATA_3G[mInetCondition];
+                        mContentDescriptionDataType = "HSPA+";
+                    }
+                    break;
+                case TelephonyManager.NETWORK_TYPE_DCHSPAP:
+                    mDataIconList = TelephonyIcons.DATA_DC[mInetCondition];
+                    mDataTypeIconId = R.drawable.stat_sys_data_fully_connected_dc;
+                    mQSDataTypeIconId = TelephonyIcons.QS_DATA_DC[mInetCondition];
+                    mContentDescriptionDataType = "DC-HSPA+";
                     break;
                 case TelephonyManager.NETWORK_TYPE_CDMA:
                     if (!mShowAtLeastThreeGees) {

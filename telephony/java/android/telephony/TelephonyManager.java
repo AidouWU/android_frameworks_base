@@ -568,6 +568,15 @@ public class TelephonyManager {
         return retVal;
     }
 
+    /**
+     * Return if the current radio is LTE on GSM
+     * @hide
+     */
+    public static int getLteOnGsmModeStatic() {
+        return SystemProperties.getInt(TelephonyProperties.PROPERTY_LTE_ON_GSM_DEVICE,
+                    0);
+    }
+
     //
     //
     // Current Network
@@ -651,6 +660,11 @@ public class TelephonyManager {
     /** Current network is HSPA+ */
     public static final int NETWORK_TYPE_HSPAP = 15;
 
+    /** Current network is DC-HSPAP
+    * @hide
+    */
+    public static final int NETWORK_TYPE_DCHSPAP = 30;
+
     /**
      * @return the NETWORK_TYPE_xxxx for current data connection.
      */
@@ -679,7 +693,7 @@ public class TelephonyManager {
      * @see #NETWORK_TYPE_LTE
      * @see #NETWORK_TYPE_EHRPD
      * @see #NETWORK_TYPE_HSPAP
-     *
+     * @see #NETWORK_TYPE_DCHSPAP
      * @hide
      */
     public int getDataNetworkType() {
@@ -755,6 +769,7 @@ public class TelephonyManager {
             case NETWORK_TYPE_EVDO_B:
             case NETWORK_TYPE_EHRPD:
             case NETWORK_TYPE_HSPAP:
+            case NETWORK_TYPE_DCHSPAP:
                 return NETWORK_CLASS_3_G;
             case NETWORK_TYPE_LTE:
                 return NETWORK_CLASS_4_G;
@@ -807,6 +822,8 @@ public class TelephonyManager {
                 return "iDEN";
             case NETWORK_TYPE_HSPAP:
                 return "HSPA+";
+            case NETWORK_TYPE_DCHSPAP:
+                return "DC-HSPA+";
             default:
                 return "UNKNOWN";
         }
@@ -949,6 +966,21 @@ public class TelephonyManager {
         } catch (NullPointerException ex) {
             // This could happen before phone restarts due to crashing
             return PhoneConstants.LTE_ON_CDMA_UNKNOWN;
+        }
+    }
+
+    /**
+     * Return if the current radio is LTE on GSM
+     * @hide
+     */
+    public int getLteOnGsmMode() {
+        try {
+            return getITelephony().getLteOnGsmMode();
+        } catch (RemoteException ex) {
+            return 0;
+        } catch (NullPointerException ex) {
+            // This could happen before phone restarts due to crashing
+            return 0;
         }
     }
 
@@ -1405,6 +1437,10 @@ public class TelephonyManager {
      * @hide pending API review
      */
     public boolean isSmsCapable() {
+        if (!SystemProperties.getBoolean(TelephonyProperties.PROPERTY_SMS_RECEIVE, true)
+                && !SystemProperties.getBoolean(TelephonyProperties.PROPERTY_SMS_SEND, true)) {
+            return false;
+        }
         if (mContext == null) return true;
         return mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_sms_capable);

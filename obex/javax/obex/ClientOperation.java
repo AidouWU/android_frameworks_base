@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2013, The Linux Foundation. All rights reserved.
  * Copyright (c) 2008-2009, Motorola, Inc.
  *
  * All rights reserved.
@@ -66,6 +67,8 @@ public final class ClientOperation implements Operation, BaseStream {
 
     private boolean mGetOperation;
 
+    private boolean mGetFinalFlag;
+
     private HeaderSet mRequestHeader;
 
     private HeaderSet mReplyHeader;
@@ -90,6 +93,7 @@ public final class ClientOperation implements Operation, BaseStream {
         mOperationDone = false;
         mMaxPacketSize = maxSize;
         mGetOperation = type;
+        mGetFinalFlag = false;
 
         mPrivateInputOpen = false;
         mPrivateOutputOpen = false;
@@ -128,6 +132,15 @@ public final class ClientOperation implements Operation, BaseStream {
                     4);
 
         }
+    }
+
+    /**
+     * Allows to set flag which will force GET to be always sent as single packet request with
+     * final flag set. This is to improve compatibility with some profiles, i.e. PBAP which
+     * require requests to be sent this way.
+     */
+    public void setGetFinalFlag(boolean flag) {
+        mGetFinalFlag = flag;
     }
 
     /**
@@ -732,5 +745,8 @@ public final class ClientOperation implements Operation, BaseStream {
     }
 
     public void noBodyHeader(){
+    }
+    public void noEndofBody() {
+
     }
 }
