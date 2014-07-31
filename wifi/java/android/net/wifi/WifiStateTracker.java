@@ -259,6 +259,7 @@ public class WifiStateTracker extends BaseNetworkStateTracker {
         return "net.tcp.buffersize.wifi";
     }
 
+
     private class WifiStateReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
