@@ -1332,6 +1332,19 @@
          2 - The device DOES NOT have a permanent menu key; ignore autodetection. -->
     <integer name="config_overrideHasPermanentMenuKey">0</integer>
 
+    <!-- Hardware 'face' keys present on the device, stored as a bit field.
+         This integer should equal the sum of the corresponding value for each
+         of the following keys present:
+             1 - Home
+             2 - Back
+             4 - Menu
+             8 - Assistant (search)
+            16 - App switch
+            32 - Camera
+         For example, a device with Home, Back and Menu keys would set this
+         config to 7. -->
+    <integer name="config_deviceHardwareKeys">7</integer>
+
     <!-- Boolean to enable stk functionality on Samsung phones -->
     <bool name="config_samsung_stk">false</bool>
 
