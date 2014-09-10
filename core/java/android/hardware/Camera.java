@@ -3481,7 +3481,11 @@ public class Camera {
          *        know if exposure compensation is supported.
          */
         public void setExposureCompensation(int value) {
-            set(KEY_EXPOSURE_COMPENSATION, value);
+            int temp = 0;
+            // jactive doesn't like default values, for example -6 is not accepted
+            if (value != 0)
+                temp = (int)value/3;
+            set(KEY_EXPOSURE_COMPENSATION, temp);
         }
 
         /**
