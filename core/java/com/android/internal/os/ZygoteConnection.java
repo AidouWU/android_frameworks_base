@@ -222,7 +222,7 @@ class ZygoteConnection {
 
             pid = Zygote.forkAndSpecialize(parsedArgs.uid, parsedArgs.gid, parsedArgs.gids,
                     parsedArgs.debugFlags, rlimits, parsedArgs.mountExternal, parsedArgs.seInfo,
-                    parsedArgs.niceName);
+                    parsedArgs.niceName, fdsToClose);
         } catch (IOException ex) {
             logAndPrintError(newStderr, "Exception creating pipe", ex);
         } catch (ErrnoException ex) {
